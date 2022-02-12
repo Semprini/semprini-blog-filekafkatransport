@@ -13,7 +13,7 @@ import watchdog.events
 class Producer:
     def __init__(self):
         self.producer = KafkaProducer(
-            bootstrap_servers=['192.168.1.71:9093', '192.168.1.71:9094', '192.168.1.71:9095'],
+            bootstrap_servers=['kafka1:9093', 'kafka2:9094', 'kafka3:9095'],
             value_serializer=lambda x: dumps(x).encode('utf-8')
         )
 
@@ -63,7 +63,8 @@ class CSVProducer(Producer):
             "modified": f"{mtime}",
             "row_count": f"{row_count}",
         }
-        producer.send(self.topic_audit, value=audit_record)
+        self.producer.send(self.topic_audit, value=audit_record)
+        self.producer.flush()
 
 
 if __name__ == "__main__":
