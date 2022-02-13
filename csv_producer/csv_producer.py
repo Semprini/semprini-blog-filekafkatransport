@@ -43,20 +43,23 @@ class CSVProducer(Producer):
 
     def produce(self, file_name):
         topic_name = self.topic_prefix + os.path.basename(file_name)
+
+        mtime = os.stat(file_name).st_mtime
+
         with open(file_name, "r") as csvfile:
             dict_reader = csv.DictReader(csvfile)
 
             row_count = 0
             for row in dict_reader:
+                row['modified'] = f"{mtime}"
                 self.producer.send(topic_name, value=row)
                 row_count += 1
 
             if row_count > 0:
-                self.audit( file_name, topic_name, row_count )
+                self.audit( file_name, topic_name, row_count, mtime )
                 print(f"sent {file_name} to {topic_name}")
 
-    def audit(self, file_name, topic_name, row_count):
-        mtime = os.stat(file_name).st_mtime
+    def audit(self, file_name, topic_name, row_count, mtime):
         audit_record = {
             "file_name": f"{file_name}",
             "topic_name": f"{topic_name}",
